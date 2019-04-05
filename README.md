@@ -3,9 +3,9 @@ Image cropper script for gimp.
 There are two different scrips, the first one 'script-image-cropper.scm' can be used to crop an image.  
 The second script, the main purpose of this project, 'script-comic-page-formatter.scm' crops all the (png) images in the current dir to the given size and saves them as jpg images with the prefix 'publish_', which can then be published on a webcomic site (Tapas, Webtoons, etc).
 # TODO list
-- [] Scale images if they are too wide (more than 800 px for Webtoons and 940 px for Tapas)
-- [] Split images if they are too long (1280 px for Webtoons and 
-- [] Process only pages (files starting with 'p', 'page' or another predefined name)
+- [ ] Scale images if they are too wide (more than 800 px for Webtoons and 940 px for Tapas)
+- [ ] Split images if they are too long (1280 px for Webtoons and 
+- [ ] Process only pages (files starting with 'p', 'page' or another predefined name)
 # Installation
 ## Linux:
 Copy script files (*.scm) into ~/.gimp-[version]/scripts
