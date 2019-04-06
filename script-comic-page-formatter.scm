@@ -1,6 +1,6 @@
 ; Gets a list of the opened images, get the first one and returns the directory where it is
 ; (returns the file path without the filename)
-(define (script-function-get-image-dir)
+(define (function-get-image-dir)
 	(let*
 		(
 			(image (vector-ref (cadr (gimp-image-list)) 0)) ; Get the first image of the gimp image list
@@ -22,11 +22,11 @@
 	)
 )
 
-(define (script-function-crop-image image width height)
+; Crops the given image to the given width and height
+(define (function-crop-image image width height)
 	(let*
 		(
 			(croppedImage (car (gimp-image-duplicate image)))
-			(drawable (car (gimp-image-get-active-drawable croppedImage)))
 			(origWidth (car (gimp-image-width image)))
 			(origHeight (car (gimp-image-height image)))
 
@@ -52,11 +52,10 @@
 			(offsetX (/ (- origWidth croppedWidth) 2)) ; Offset is set so image is horizontally centered
 			(offsetY (/ (- origHeight croppedHeight) 2)) ; Offset is set so image is vertically centered  
 		)
-		(
-			; Crops the image
-			(gimp-image-crop croppedImage croppedWidth croppedHeight offsetX offsetY)
-			croppedImage
-		)
+		; Crops the image
+		(gimp-image-crop croppedImage croppedWidth croppedHeight offsetX offsetY)
+		croppedImage
+	)
 )
 
 (define (script-comic-page-formatter width height)
@@ -67,16 +66,17 @@
 			; non interactive mode from the proper directory)
 
 			; Get the list of files, if it's greater than 0 then means a file is open
-			(imageOpened (> 0 (car (gimp-image-list))))
+			(imageOpened (> (car (gimp-image-list)) 0))
 			(filePath 
 				(if imageOpened
-					(script-function-get-image-dir)
+					(function-get-image-dir)
 					""
 				)
 			)
 			(filesToFind (string-append filePath "*.png"))
 			; First obtain a list with all the png files
 			(fileList (cadr (file-glob filesToFind 1)))
+			(outputFiles (append (list imageOpened) (list (function-get-image-dir))))
 		)
 		(while (not (null? fileList)) ; Process every file on the list
 		; TODO Only process the files which are actual comic pages
@@ -94,19 +94,24 @@
 					                                                       ; Since it's to publish on internet
 					                                                       ; it doesn't matter to use a lossy format
 					(srcImage (car (file-png-load 0 filename filename)))
+					(croppedImage (function-crop-image srcImage width height))
+					(drawable (car (gimp-image-get-active-drawable croppedImage)))
+					(outputPath (string-append filePath outputFilename))
+				)
+
 				; Used to debug, removed to use it in non interactive mode
 				;(gimp-display-new srcImage) 
 				;(gimp-display-new croppedImage)
 				; Saves the image, maybe use  file-jpeg-save or file-png-save
-				(outputPath (string-append filePath outputFilename))
 				(gimp-file-save 1 croppedImage drawable outputPath outputPath)
-				
+				;(outputFiles (append '(outputFilename)))
 				; Cleanup
 				(gimp-image-delete srcImage)
 				(gimp-image-delete croppedImage)
+				(set! fileList (cdr fileList))
 			)
-			(set! fileList (cdr fileList))
 		)
+		outputFiles
 	)
 )
 (script-fu-register
